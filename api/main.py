@@ -1,4 +1,4 @@
-from fastapi import FastAPI, responses
+from fastapi import FastAPI, File, UploadFile
 from typing import Union
 
 app = FastAPI()
@@ -7,6 +7,15 @@ app = FastAPI()
 async def heartbeat():
     return "pumping"
 
-@app.get("/{video}/{res}")
-def get_video(video: str, res: str, q: Union[str, None] = None):
-    return responses.FileResponse(f"./storage/{video}/{res}/{video}_{res}.mp4")
+
+@app.post("/publish")
+async def publish_video(file: UploadFile):
+    with open(f"../{file.filename}", 'wt', encoding="utf-8") as f:
+        contents = await file.read()
+        f.write(contents.decode(encoding="utf-8"))
+    return {"published": file}
+
+
+@app.get("/{file_path:path}")
+async def read_file(file_path: str):
+    return {"file_path": file_path}
